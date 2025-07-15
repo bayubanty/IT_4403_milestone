@@ -1,4 +1,5 @@
-let allBooks = [];
+let bookshelfBooks = [];
+let searchBooks = [];
 let currentPage = 1;
 let perPage = 10;
 let currentLayout = "grid";
@@ -6,115 +7,122 @@ let currentView = "search";
 let searchHistory = [];
 
 $(document).ready(function () {
-  // Load books
+  // Load local bookshelf data
   $.getJSON("assets/google-books-placeholder.json", function (data) {
-    allBooks = data.items.map((book, i) => ({
-      index: i,
-      title: book.volumeInfo.title,
-      authors: (book.volumeInfo.authors || []).join(", "),
-      publisher: book.volumeInfo.publisher,
-      publishedDate: book.volumeInfo.publishedDate,
-      description: book.volumeInfo.description,
-      thumbnail: book.volumeInfo.imageLinks?.thumbnail || "https://via.placeholder.com/100x150",
-    }));
-    renderBooks();
+    bookshelfBooks = data.items.map((book, i) => normalizeBook(book, i));
+    renderBookshelf();
   });
 
-  // Navigation tabs
+  // Tab switching
   $("#searchTab").click(() => switchTab("search"));
   $("#bookshelfTab").click(() => switchTab("bookshelf"));
 
   // Search
-  $('#searchBtn').click(() => {
-    const term = $('#searchTerm').val().trim();
-    if (term && !searchHistory.includes(term)) {
+  $("#searchBtn").click(() => {
+    const term = $("#searchTerm").val().trim();
+    if (!term) return;
+    fetchGoogleBooks(term);
+    if (!searchHistory.includes(term)) {
       searchHistory.unshift(term);
       if (searchHistory.length > 5) searchHistory.pop();
       renderHistory();
     }
-    currentPage = 1;
-    renderBooks(term);
   });
 
-  // Search history click
-  $('#searchHistory').on('click', '.history-item', function () {
+  $("#searchHistory").on("click", ".history-item", function () {
     const term = $(this).text();
-    $('#searchTerm').val(term);
-    renderBooks(term);
+    $("#searchTerm").val(term);
+    fetchGoogleBooks(term);
   });
 
   // Layout toggle
-  $('#viewToggle').change(function () {
+  $("#viewToggle").change(function () {
     currentLayout = $(this).val();
-    renderBooks($('#searchTerm').val());
+    renderBooks();
+    renderBookshelf();
   });
 
-  // Book click event
-  $('#bookResults, #bookshelf').on('click', '.book-card', function () {
-    const index = $(this).data('index');
-    showDetails(allBooks[index]);
+  // Book details
+  $("#bookResults, #bookshelf").on("click", ".book-card", function () {
+    const index = $(this).data("index");
+    const book = currentView === "search" ? searchBooks[index] : bookshelfBooks[index];
+    showDetails(book);
   });
 
-  // Back button
-  $('#backBtn').click(() => {
-    $('#detail-view').hide();
-    $('#bookResults').show();
-    $('#bookshelf').show();
+  $("#backBtn").click(() => {
+    $("#detail-view").hide();
+    $(".view").show();
   });
 });
 
-function switchTab(tab) {
-  currentView = tab;
-  $('.nav-link').removeClass('active');
-  $(`#${tab}Tab`).addClass('active');
-  $('.view').removeClass('active');
-  $(`#${tab}View`).addClass('active');
+function normalizeBook(book, index) {
+  const info = book.volumeInfo || {};
+  return {
+    index,
+    title: info.title || "No Title",
+    authors: (info.authors || []).join(", "),
+    publisher: info.publisher || "Unknown",
+    publishedDate: info.publishedDate || "N/A",
+    description: info.description || "No description.",
+    thumbnail: info.imageLinks?.thumbnail || "https://via.placeholder.com/100x150",
+  };
 }
 
-function renderBooks(term = "") {
-  const filtered = allBooks.filter(book =>
-    book.title.toLowerCase().includes(term.toLowerCase())
-  );
+function fetchGoogleBooks(term) {
+  $.getJSON(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(term)}`, function (data) {
+    searchBooks = (data.items || []).map((book, i) => normalizeBook(book, i));
+    currentPage = 1;
+    renderBooks();
+  });
+}
 
+function switchTab(tab) {
+  currentView = tab;
+  $(".nav-link").removeClass("active");
+  $(`#${tab}Tab`).addClass("active");
+  $(".view").removeClass("active");
+  $(`#${tab}View`).addClass("active");
+  $("#detail-view").hide();
+}
+
+function renderBooks() {
   const start = (currentPage - 1) * perPage;
-  const booksToShow = filtered.slice(start, start + perPage);
+  const shown = searchBooks.slice(start, start + perPage);
+  const template = $("#book-template").html();
+  const rendered = shown.map(book => Mustache.render(template, { ...book, layout: currentLayout })).join("");
+  $("#bookResults").attr("class", `book-${currentLayout}`).html(rendered);
+  renderPagination(searchBooks.length);
+}
 
-  const template = $('#book-template').html();
-  const rendered = booksToShow.map(book => Mustache.render(template, { ...book, layout: currentLayout })).join('');
-
-  if (currentView === "search") {
-    $('#bookResults').html(rendered);
-  } else {
-    $('#bookshelf').html(rendered);
-  }
-
-  renderPagination(filtered.length);
+function renderBookshelf() {
+  const template = $("#book-template").html();
+  const rendered = bookshelfBooks.map(book => Mustache.render(template, { ...book, layout: currentLayout })).join("");
+  $("#bookshelf").attr("class", `book-${currentLayout}`).html(rendered);
 }
 
 function showDetails(book) {
-  $('#bookResults').hide();
-  $('#bookshelf').hide();
-  const template = $('#book-detail-template').html();
+  const template = $("#book-detail-template").html();
   const rendered = Mustache.render(template, book);
-  $('#bookDetail').html(rendered);
-  $('#detail-view').show();
+  $("#bookDetail").html(rendered);
+  $(".view").hide();
+  $("#detail-view").show();
 }
 
 function renderPagination(totalItems) {
   const totalPages = Math.ceil(totalItems / perPage);
-  let buttons = '';
+  let buttons = "";
   for (let i = 1; i <= totalPages; i++) {
-    buttons += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+    buttons += `<button class="page-btn ${i === currentPage ? "active" : ""}" onclick="changePage(${i})">${i}</button>`;
   }
-  $('#pagination').html(buttons);
+  $("#pagination").html(buttons);
 }
 
 function changePage(page) {
   currentPage = page;
-  renderBooks($('#searchTerm').val());
+  renderBooks();
 }
 
 function renderHistory() {
-  const html = searchHistory.map(term => `<span class="history-item">${term}</span>`).join('');
-  $('#searchHistory').html(`<div><strong>Recent Searches:</strong> ${html}</div>`);
+  const html = searchHistory.map(term => `<span class="history-item">${term}</span>`).join(" ");
+  $("#searchHistory").html(`<div><strong>Recent Searches:</strong> ${html}</div>`);
 }
