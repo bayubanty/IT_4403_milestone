@@ -1,1 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Milestone 4 - SPA Book Search</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
+  <script src="js/app.js" defer></script>
+</head>
+<body>
+  <nav>
+    <a href="#" class="nav-link active" id="searchTab">Search</a>
+    <a href="#" class="nav-link" id="bookshelfTab">Bookshelf</a>
+  </nav>
 
+  <div id="app-container">
+    <div class="search-container">
+      <input type="text" id="searchTerm" placeholder="Enter search term..." />
+      <button id="searchBtn">Search</button>
+      <select id="viewToggle">
+        <option value="grid">Grid View</option>
+        <option value="list">List View</option>
+      </select>
+    </div>
+
+    <div id="searchHistory"></div>
+
+    <div class="view active" id="searchView">
+      <div id="bookResults" class="book-grid"></div>
+      <div class="pagination-container" id="pagination"></div>
+    </div>
+
+    <div class="view" id="bookshelfView">
+      <div id="bookshelf" class="book-grid"></div>
+    </div>
+
+    <div id="detail-view" style="display:none;">
+      <button id="backBtn">&larr; Back</button>
+      <div id="bookDetail"></div>
+    </div>
+  </div>
+
+  <!-- Mustache Templates -->
+  <script id="book-template" type="x-tmpl-mustache">
+    <div class="book-card {{layout}}" data-index="{{index}}">
+      <img src="{{thumbnail}}" alt="Cover">
+      <h3>{{title}}</h3>
+    </div>
+  </script>
+
+  <script id="book-detail-template" type="x-tmpl-mustache">
+    <h2>{{title}}</h2>
+    <img src="{{thumbnail}}" alt="Cover">
+    <p><strong>Authors:</strong> {{authors}}</p>
+    <p><strong>Publisher:</strong> {{publisher}}</p>
+    <p><strong>Published:</strong> {{publishedDate}}</p>
+    <p><strong>Description:</strong> {{description}}</p>
+  </script>
+</body>
+</html>
