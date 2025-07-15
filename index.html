@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Milestone 4 - SPA Book Search</title>
+  <title>SPA Book Search</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
@@ -10,8 +10,8 @@
 </head>
 <body>
   <nav>
-    <a href="#" class="nav-link active" id="searchTab">Search</a>
-    <a href="#" class="nav-link" id="bookshelfTab">Bookshelf</a>
+    <a href="#" class="nav-link active" id="searchTab">SEARCH</a>
+    <a href="#" class="nav-link" id="bookshelfTab">BOOKSHELF</a>
   </nav>
 
   <div id="app-container">
@@ -40,8 +40,7 @@
       <div id="bookDetail"></div>
     </div>
   </div>
-
-  <!-- Mustache Templates -->
+  
   <script id="book-template" type="x-tmpl-mustache">
     <div class="book-card {{layout}}" data-index="{{index}}">
       <img src="{{thumbnail}}" alt="Cover">
