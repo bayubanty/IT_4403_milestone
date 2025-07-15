@@ -1,60 +1,223 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>SPA Book Search</title>
-  <link rel="stylesheet" href="css/style.css">
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mustache@4.2.0/mustache.min.js"></script>
-  <script src="js/app.js" defer></script>
-</head>
-<body>
-  <nav>
-    <a href="#" class="nav-link active" id="searchTab">SEARCH</a>
-    <a href="#" class="nav-link" id="bookshelfTab">BOOKSHELF</a>
-  </nav>
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #333;
+}
 
-  <div id="app-container">
-    <div class="search-container">
-      <input type="text" id="searchTerm" placeholder="Enter search term..." />
-      <button id="searchBtn">Search</button>
-      <select id="viewToggle">
-        <option value="grid">Grid View</option>
-        <option value="list">List View</option>
-      </select>
-    </div>
+nav {
+  background-color: #00796b;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
 
-    <div id="searchHistory"></div>
+.nav-link {
+  color: #fff;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
 
-    <div class="view active" id="searchView">
-      <div id="bookResults" class="book-grid"></div>
-      <div class="pagination-container" id="pagination"></div>
-    </div>
+.nav-link:hover,
+.nav-link.active {
+  background-color: #004d40;
+}
 
-    <div class="view" id="bookshelfView">
-      <div id="bookshelf" class="book-grid"></div>
-    </div>
+#app-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
 
-    <div id="detail-view" style="display:none;">
-      <button id="backBtn">&larr; Back</button>
-      <div id="bookDetail"></div>
-    </div>
-  </div>
-  
-  <script id="book-template" type="x-tmpl-mustache">
-    <div class="book-card {{layout}}" data-index="{{index}}">
-      <img src="{{thumbnail}}" alt="Cover">
-      <h3>{{title}}</h3>
-    </div>
-  </script>
+.view {
+  display: none;
+}
 
-  <script id="book-detail-template" type="x-tmpl-mustache">
-    <h2>{{title}}</h2>
-    <img src="{{thumbnail}}" alt="Cover">
-    <p><strong>Authors:</strong> {{authors}}</p>
-    <p><strong>Publisher:</strong> {{publisher}}</p>
-    <p><strong>Published:</strong> {{publishedDate}}</p>
-    <p><strong>Description:</strong> {{description}}</p>
-  </script>
-</body>
-</html>
+.view.active {
+  display: block;
+}
+
+.search-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  max-width: 600px;
+}
+
+#searchTerm {
+  flex: 1 1 60%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 1rem;
+}
+
+#searchBtn {
+  padding: 0.75rem 1.5rem;
+  background-color: #00796b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  flex: 1 1 auto;
+}
+
+#searchBtn:hover {
+  background-color: #004d40;
+}
+
+.book-grid,
+.book-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.book-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.book-card {
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+}
+
+.book-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.book-list .book-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.5rem;
+}
+
+.book-list .book-card img {
+  width: 60px;
+  height: 90px;
+  object-fit: cover;
+}
+
+.book-list .book-card h3 {
+  font-size: 1rem;
+  white-space: normal;
+  overflow: visible;
+}
+
+.book-card h3 {
+  padding: 1rem;
+  margin: 0;
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.page-btn {
+  padding: 0.5rem 1rem;
+  background-color: #00796b;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.page-btn:hover,
+.page-btn.active {
+  background-color: #004d40;
+  font-weight: bold;
+}
+
+#detail-view {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+#backBtn {
+  background: none;
+  border: none;
+  color: #00796b;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+#backBtn:hover {
+  text-decoration: underline;
+}
+
+#bookDetail {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+#bookDetail h2 {
+  margin-top: 0;
+}
+
+#bookDetail img {
+  max-width: 200px;
+  float: left;
+  margin-right: 2rem;
+  margin-bottom: 1rem;
+}
+
+#bookDetail p {
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+
+  .search-container {
+    flex-direction: column;
+  }
+
+  #searchTerm,
+  #searchBtn {
+    width: 100%;
+    flex: none;
+  }
+
+  #bookDetail img {
+    float: none;
+    display: block;
+    margin: 0 auto 1rem;
+  }
+}
