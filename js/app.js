@@ -7,13 +7,13 @@ let currentView = "search";
 let searchHistory = [];
 
 $(document).ready(function () {
-  // Load local bookshelf data
+  // Load bookshelf from local JSON
   $.getJSON("assets/google-books-placeholder.json", function (data) {
     bookshelfBooks = data.items.map((book, i) => normalizeBook(book, i));
     renderBookshelf();
   });
 
-  // Tab switching
+  // Navigation
   $("#searchTab").click(() => switchTab("search"));
   $("#bookshelfTab").click(() => switchTab("bookshelf"));
 
@@ -35,20 +35,21 @@ $(document).ready(function () {
     fetchGoogleBooks(term);
   });
 
-  // Layout toggle
+  // Layout view toggle
   $("#viewToggle").change(function () {
     currentLayout = $(this).val();
     renderBooks();
     renderBookshelf();
   });
 
-  // Book details
+  // Book card click
   $("#bookResults, #bookshelf").on("click", ".book-card", function () {
     const index = $(this).data("index");
     const book = currentView === "search" ? searchBooks[index] : bookshelfBooks[index];
     showDetails(book);
   });
 
+  // Back from detail view
   $("#backBtn").click(() => {
     $("#detail-view").hide();
     $(".view").show();
@@ -69,7 +70,7 @@ function normalizeBook(book, index) {
 }
 
 function fetchGoogleBooks(term) {
-  $.getJSON(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(term)}`, function (data) {
+  $.getJSON(`https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(term)}&maxResults=40`, function (data) {
     searchBooks = (data.items || []).map((book, i) => normalizeBook(book, i));
     currentPage = 1;
     renderBooks();
